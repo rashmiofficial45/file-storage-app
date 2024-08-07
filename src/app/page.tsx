@@ -1,18 +1,26 @@
-"use client"
+"use client";
 import { api } from "../../convex/_generated/api";
-import { OrganizationSwitcher, SignedIn, SignedOut, SignInButton, SignOutButton, UserButton } from '@clerk/nextjs';
-import { useMutation, useQuery } from 'convex/react';
-import { Button } from '@/components/ui/button';
-import { getFiles } from "../../convex/files";
+import { useMutation, useQuery } from "convex/react";
+import { Button } from "@/components/ui/button";
+import {
+  SignedIn,
+  SignedOut,
+  SignInButton,
+  SignOutButton,
+  useOrganization,
+} from "@clerk/nextjs";
 
 const Home = () => {
+  const { organization } = useOrganization();
+  console.log(organization);
   const createFile = useMutation(api.files.createFile);
-  const getFiles = useQuery(api.files.getFiles);
+  const files = useQuery(
+    api.files.getFiles,
+    organization?.id ? { orgId: organization.id } : "skip"
+  );
   return (
     <div>
       <SignedIn>
-        <UserButton />
-        <OrganizationSwitcher />
         <SignOutButton>
           <button>Sign out</button>
         </SignOutButton>
@@ -22,16 +30,21 @@ const Home = () => {
           <button>Sign in</button>
         </SignInButton>
       </SignedOut>
-      <Button onClick={() => createFile(
-        {
-          name: "Hello World",
-        }
-      )}>Click me</Button>
-      {getFiles?.map(files=>{
-        return <div key={files._id}>
-      {files.name}
-        </div>
+      {files?.map((file:any) => {
+        return <div key={file._id}>{file.name}</div>;
       })}
+      <Button
+        onClick={() => {
+          if (!organization) return;
+          createFile({
+            name: "Hello World",
+            orgId: organization?.id,
+          });
+        }}
+      >
+        Click me
+      </Button>
+
     </div>
   );
 };
