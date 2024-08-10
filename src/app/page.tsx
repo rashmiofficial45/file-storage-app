@@ -8,44 +8,42 @@ import {
   SignInButton,
   SignOutButton,
   useOrganization,
+  useUser,
 } from "@clerk/nextjs";
 
 const Home = () => {
-  const { organization } = useOrganization();
-  console.log(organization);
+  const organization = useOrganization();
+  const user = useUser()
+  // console.log(organization);
+  // console.log(user);
+
+  let orgId:string | undefined = undefined
+  if (organization.isLoaded && user.isLoaded) {
+    //Nullish coalescing operator (??)
+    orgId = organization.organization?.id ?? user?.user?.id
+  }
   const createFile = useMutation(api.files.createFile);
   const files = useQuery(
     api.files.getFiles,
-    organization?.id ? { orgId: organization.id } : "skip"
+    orgId ? { orgId } : "skip"
   );
   return (
-    <div>
-      <SignedIn>
-        <SignOutButton>
-          <button>Sign out</button>
-        </SignOutButton>
-      </SignedIn>
-      <SignedOut>
-        <SignInButton mode="modal">
-          <button>Sign in</button>
-        </SignInButton>
-      </SignedOut>
+    <main className="flex min-h-screen flex-col items-center justify-between p-24">
       {files?.map((file:any) => {
         return <div key={file._id}>{file.name}</div>;
       })}
       <Button
         onClick={() => {
-          if (!organization) return;
+          if (!orgId) return;
           createFile({
-            name: "Hello World",
-            orgId: organization?.id,
+            name: "hello world",
+            orgId,
           });
         }}
       >
-        Click me
+        Click Me
       </Button>
-
-    </div>
+    </main>
   );
 };
 

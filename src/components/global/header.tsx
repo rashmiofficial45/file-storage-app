@@ -1,4 +1,4 @@
-import { OrganizationSwitcher, UserButton } from "@clerk/nextjs";
+import { OrganizationSwitcher, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
 import React from "react";
 
 type Props = {};
@@ -19,6 +19,11 @@ const Header = (props: Props) => {
             }}
           />
           <UserButton />
+          <SignedOut>
+        <SignInButton>
+          Sign In
+        </SignInButton>
+      </SignedOut>
         </div>
       </div>
     </div>

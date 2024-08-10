@@ -1,6 +1,14 @@
 import { ConvexError, v } from "convex/values";
-import { mutation, query } from "./_generated/server";
-
+import { mutation, MutationCtx, query, QueryCtx } from "./_generated/server";
+import { getUser } from "./users";
+async function hasAccessToOrg (ctx:MutationCtx | QueryCtx, orgId:string) : Promise<boolean> {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+        return false;
+    }
+    const user = await getUser(ctx, identity.tokenIdentifier);
+    return user.orgIds.includes(orgId) || user.tokenIdentifier.includes(orgId);
+}
 export const createFile = mutation({
     args: {
         name: v.string(),
@@ -10,6 +18,13 @@ export const createFile = mutation({
         const identity = await ctx.auth.getUserIdentity()
         if (!identity){
             throw new ConvexError(" Must be Loggedin to create Files");
+        }
+        const user = await getUser(ctx, identity.tokenIdentifier)
+        const hasAccess = hasAccessToOrg(ctx, args.orgId);
+        console.log(user.tokenIdentifier);
+
+        if (!hasAccess) {
+            throw new ConvexError("You are not authorized to create files in this organization");
         }
         await ctx.db.insert("files", {
             name: args.name,
@@ -25,7 +40,6 @@ export const getFiles = query({
     },
     async handler(ctx, args) {
         const identity = await ctx.auth.getUserIdentity();
-
         if (!identity) {
           return [];
         }
