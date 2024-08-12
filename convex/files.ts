@@ -1,51 +1,70 @@
 import { ConvexError, v } from "convex/values";
 import { mutation, MutationCtx, query, QueryCtx } from "./_generated/server";
 import { getUser } from "./users";
-async function hasAccessToOrg (ctx:MutationCtx | QueryCtx, orgId:string) : Promise<boolean> {
+
+export const generateUploadUrl = mutation(async (ctx) => {
+  const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new ConvexError(" Must be Loggedin to create Files");
+    }
+  return await ctx.storage.generateUploadUrl();
+});
+
+
+async function hasAccessToOrg(
+  ctx: MutationCtx | QueryCtx,
+  orgId: string
+): Promise<boolean> {
+  const identity = await ctx.auth.getUserIdentity();
+  if (!identity) {
+    return false;
+  }
+  const user = await getUser(ctx, identity.tokenIdentifier);
+  return user.orgIds.includes(orgId) || user.tokenIdentifier.includes(orgId);
+}
+
+
+export const createFile = mutation({
+  args: {
+      name: v.string(),
+      orgId: v.string(),
+      fileId: v.id("_storage"),
+    },
+    async handler(ctx, args) {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
-        return false;
+      throw new ConvexError(" Must be Loggedin to create Files");
     }
     const user = await getUser(ctx, identity.tokenIdentifier);
-    return user.orgIds.includes(orgId) || user.tokenIdentifier.includes(orgId);
-}
-export const createFile = mutation({
-    args: {
-        name: v.string(),
-        orgId: v.string()
-    },
-    async handler(ctx, args) {
-        const identity = await ctx.auth.getUserIdentity()
-        if (!identity){
-            throw new ConvexError(" Must be Loggedin to create Files");
-        }
-        const user = await getUser(ctx, identity.tokenIdentifier)
-        const hasAccess = hasAccessToOrg(ctx, args.orgId);
-        console.log(user.tokenIdentifier);
+    const hasAccess = hasAccessToOrg(ctx, args.orgId);
+    console.log(user.tokenIdentifier);
 
-        if (!hasAccess) {
-            throw new ConvexError("You are not authorized to create files in this organization");
-        }
-        await ctx.db.insert("files", {
-            name: args.name,
-            orgId: args.orgId
-        });
+    if (!hasAccess) {
+      throw new ConvexError(
+        "You are not authorized to create files in this organization"
+      );
+    }
+    await ctx.db.insert("files", {
+      name: args.name,
+      orgId: args.orgId,
+      fileId: args.fileId,
+    });
+  },
+});
 
-    },
-})
 
 export const getFiles = query({
-    args: {
-        orgId: v.string()
-    },
-    async handler(ctx, args) {
-        const identity = await ctx.auth.getUserIdentity();
-        if (!identity) {
-          return [];
-        }
-        return ctx.db
+  args: {
+    orgId: v.string(),
+  },
+  async handler(ctx, args) {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      return [];
+    }
+    return ctx.db
       .query("files")
       .withIndex("by_org", (q) => q.eq("orgId", args.orgId))
       .collect();
-    }
-})
+  },
+});
