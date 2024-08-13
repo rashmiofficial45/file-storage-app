@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { ReactNode, useState } from "react";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -27,7 +27,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-import { Delete, Download, EllipsisVertical } from "lucide-react";
+import { Delete, Download, EllipsisVertical, FileSpreadsheet, FileText, Image } from "lucide-react";
 import { Doc } from "../../convex/_generated/dataModel";
 import { useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
@@ -41,6 +41,7 @@ const FileCardAction = ({ file }: Props) => {
     const {toast} = useToast();
     const [isConfirmOpen, setIsConfirmOpen] = useState<boolean>(false)
     const deleteFile = useMutation(api.files.deleteFile);
+
   return (
     <>
 <AlertDialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
@@ -85,6 +86,11 @@ const FileCardAction = ({ file }: Props) => {
   );
 };
 const FileCard = ({ file }: Props) => {
+    const typeIcons = {
+        "image":<Image />,
+        "csv": <FileSpreadsheet />,
+        "pdf":<FileText />
+} as Record<Doc<"files">["types"] , ReactNode>
   return (
     <div>
       <Card>
@@ -95,7 +101,7 @@ const FileCard = ({ file }: Props) => {
           </div>
         </CardHeader>
         <CardContent>
-          <p>Card Content</p>
+          {typeIcons[file.types]}
         </CardContent>
         <CardFooter>
           <button>download</button>

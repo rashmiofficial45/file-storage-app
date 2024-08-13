@@ -27,6 +27,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
+import { Doc } from "../../convex/_generated/dataModel";
 const createFileSchema = z.object({
   title: z.string().min(2).max(50),
   file: z
@@ -50,18 +51,29 @@ export const UploadButton = () => {
   async function onSubmit(values: z.infer<typeof createFileSchema>) {
     if (!orgId) return;
     const postUrl = await generateUploadUrl();
+    const fileType = values.file[0].type
     const result = await fetch(postUrl, {
       method: "POST",
-      headers: { "Content-Type": values.file[0].type },
+      headers: { "Content-Type": fileType},
       body: values.file[0],
     });
+
     const { storageId } = await result.json();
     console.log(values);
+    const types = {
+      "image/jpeg":"image",
+      "image/png":"image",
+      "text/csv":"csv",
+      "application/pdf":"pdf"
+    } as Record<string , Doc<"files">["types"]>
+    console.log(types[fileType]);
+
     try {
       await createFile({
         name: values.title,
         orgId,
         fileId: storageId,
+        types: types[fileType]
       });
       form.reset();
       setIsDialogOpen(false);
