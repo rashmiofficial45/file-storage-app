@@ -59,16 +59,30 @@ export const createFile = mutation({
 export const getFiles = query({
   args: {
     orgId: v.string(),
+    query: v.optional(v.string()),
   },
   async handler(ctx, args) {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
       return [];
     }
-    return ctx.db
+    let files = await ctx.db
       .query("files")
       .withIndex("by_org", (q) => q.eq("orgId", args.orgId))
       .collect();
+
+      const query = args.query
+    if (query){
+     files = files.filter((file) => file.name.toLowerCase().includes(query.toLowerCase()));
+    }
+    const filesWithUrl = await Promise.all(
+      files.map(async (file) => ({
+        ...file,
+        url: await ctx.storage.getUrl(file.fileId),
+      }))
+    );
+
+    return filesWithUrl;
   },
 });
 
@@ -96,5 +110,5 @@ export const deleteFile = mutation({
     }
     await ctx.db.delete(args.fileId);
   }
-
 })
+
