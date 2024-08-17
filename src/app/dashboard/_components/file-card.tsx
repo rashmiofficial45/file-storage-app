@@ -30,6 +30,7 @@ import {
   FileSpreadsheet,
   FileText,
   Images,
+  StarIcon,
 } from "lucide-react";
 import { Doc } from "../../../../convex/_generated/dataModel";
 import { useMutation } from "convex/react";
@@ -42,8 +43,9 @@ type Props = {
 const FileCardAction = ({ file }: Props) => {
   const { toast } = useToast();
   const [isConfirmOpen, setIsConfirmOpen] = useState<boolean>(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
   const deleteFile = useMutation(api.files.deleteFile);
-
+  const toggleFavourite = useMutation(api.files.toggleFavourites);
   return (
     <>
       <AlertDialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
@@ -73,7 +75,8 @@ const FileCardAction = ({ file }: Props) => {
         </AlertDialogContent>
       </AlertDialog>
 
-      <DropdownMenu>
+      <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}
+      >
         <DropdownMenuTrigger>
           <EllipsisVertical />
         </DropdownMenuTrigger>
@@ -87,6 +90,17 @@ const FileCardAction = ({ file }: Props) => {
           >
             <Download />
             Download
+          </DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuLabel
+            onClick={() => {
+              toggleFavourite({ fileId: file._id });
+              setIsDropdownOpen(false)
+            }}
+            className=" cursor-pointer flex gap-2 text-slate-600 items-center"
+          >
+            <StarIcon />
+            Favourite
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuLabel

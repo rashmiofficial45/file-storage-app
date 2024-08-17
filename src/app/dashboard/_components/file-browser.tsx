@@ -9,10 +9,11 @@ import { Loader2 } from "lucide-react";
 import { useState } from "react";
 import { SearchBar } from "../_components/search-bar";
 type Props = {
-    title:string
+    title:string,
+    favourites?:boolean
 }
 
-const FileBrowser = (props: Props) => {
+const FileBrowser = ({title , favourites}: Props) => {
     const [query, setQuery] = useState("");
   const organization = useOrganization();
   const user = useUser();
@@ -21,8 +22,9 @@ const FileBrowser = (props: Props) => {
     //IMP:Nullish coalescing operator (??)
     orgId = organization.organization?.id ?? user?.user?.id;
   }
-  const files = useQuery(api.files.getFiles, orgId ? { orgId, query } : "skip");
+  const files = useQuery(api.files.getFiles, orgId ? { orgId, query , favourites} : "skip");
   const isLoading = files === undefined;
+  if (files === null) return <div>Something went wrong</div>
   return (
     <>
         {isLoading && (
@@ -37,7 +39,7 @@ const FileBrowser = (props: Props) => {
           {!isLoading && (
             <>
               <div className="flex justify-between p-12">
-                <div className="text-5xl font-bold">{props.title}</div>
+                <div className="text-5xl font-bold">{title}</div>
                 <div>
                   <SearchBar query={query} setQuery={setQuery} />
                 </div>
