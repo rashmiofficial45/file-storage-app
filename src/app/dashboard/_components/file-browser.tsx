@@ -2,7 +2,7 @@
 import { UploadButton } from "../_components/upload-button";
 import FileCard from "../_components/file-card";
 import { api } from "../../../../convex/_generated/api";
-import { useMutation, useQuery } from "convex/react";
+import { useQuery } from "convex/react";
 import { useOrganization, useUser } from "@clerk/nextjs";
 import Image from "next/image";
 import { Loader2 } from "lucide-react";
@@ -14,7 +14,7 @@ type Props = {
 }
 
 const FileBrowser = ({title , favourites}: Props) => {
-    const [query, setQuery] = useState("");
+  const [query, setQuery] = useState("");
   const organization = useOrganization();
   const user = useUser();
   let orgId: string | undefined = undefined;
@@ -22,9 +22,21 @@ const FileBrowser = ({title , favourites}: Props) => {
     //IMP:Nullish coalescing operator (??)
     orgId = organization.organization?.id ?? user?.user?.id;
   }
+  const allFavourites = useQuery(api.files.getAllFavorites , orgId?{orgId}:"skip" )
+
   const files = useQuery(api.files.getFiles, orgId ? { orgId, query , favourites} : "skip");
   const isLoading = files === undefined;
   if (files === null) return <div>Something went wrong</div>
+  if(!allFavourites){
+    return <div>Something went wrong</div>
+  }
+  const modifiedFiles =
+  files?.map((file) => ({
+    ...file,
+    isFavourited: (allFavourites ?? []).some(
+      (favourite) => favourite.fileId === file._id
+    ),
+  })) ?? [];
   return (
     <>
         {isLoading && (
@@ -48,7 +60,7 @@ const FileBrowser = ({title , favourites}: Props) => {
                 </div>
               </div>
               {!isLoading && !query && files.length === 0 && (
-                <div className="flex mx-auto justify-center flex-col p-12">
+                <div className="flex items-center justify-center flex-col p-12">
                   <Image
                     src="/empty.svg"
                     height="300"
@@ -56,7 +68,7 @@ const FileBrowser = ({title , favourites}: Props) => {
                     alt="No files found"
                   />
                   <div className="mt-8 text-xl text-center font-semibold text-slate-600">
-                    You have no Files, <br />
+                    You have no Files here, <br />
                     go ahead and Upload one.
                     <div className="mt-8">
                       <UploadButton />
@@ -65,9 +77,9 @@ const FileBrowser = ({title , favourites}: Props) => {
                 </div>
               )}
               <div className="grid gap-4 grid-cols-3 p-12">
-                {files?.map((file: any) => {
-                  return <FileCard key={file._id} file={file} />;
-                })}
+              {modifiedFiles?.map((file) => {
+              return <FileCard key={file._id} file={file} />;
+            })}
               </div>
             </>
           )}

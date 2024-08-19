@@ -31,6 +31,7 @@ import {
   FileText,
   Images,
   StarIcon,
+  StarOff,
 } from "lucide-react";
 import { Doc } from "../../../../convex/_generated/dataModel";
 import { useMutation } from "convex/react";
@@ -38,7 +39,7 @@ import { api } from "../../../../convex/_generated/api";
 import { useToast } from "@/components/ui/use-toast";
 import Image from "next/image";
 type Props = {
-  file: Doc<"files"> & { isFavorited: boolean; url: string | null };
+  file: Doc<"files"> & { url: string | null , isFavourited: boolean };
 };
 const FileCardAction = ({ file }: Props) => {
   const { toast } = useToast();
@@ -99,8 +100,15 @@ const FileCardAction = ({ file }: Props) => {
             }}
             className=" cursor-pointer flex gap-2 text-slate-600 items-center"
           >
-            <StarIcon />
-            Favourite
+            {file.isFavourited ? (
+              <>
+                <StarOff /> Unfavorite
+              </>
+            ) : (
+              <>
+                 <StarIcon/> Favorite
+              </>
+            )}
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuLabel
