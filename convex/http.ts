@@ -20,11 +20,16 @@ http.route({
           "svix-signature": headerPayload.get("svix-signature")!,
         },
       });
-
+      console.log(result);
+      
       switch (result.type) {
         case "user.created":
           await ctx.runMutation(internal.users.createUser, {
             tokenIdentifier: `https://evident-ram-87.clerk.accounts.dev|${result.data.id}`,
+            name: `${result.data.first_name ?? ""} ${
+              result.data.last_name ?? ""
+            }`,
+            image: result.data.image_url,
           });
           break;
         case "organizationMembership.created":

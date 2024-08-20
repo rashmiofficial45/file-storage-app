@@ -1,14 +1,4 @@
-import React, { ReactNode, useState } from "react";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import React, { ReactNode } from "react";
 import {
   Card,
   CardContent,
@@ -16,116 +6,24 @@ import {
   CardHeader,
 } from "@/components/ui/card";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-
-import {
-  Delete,
-  Download,
-  EllipsisVertical,
   FileSpreadsheet,
   FileText,
   Images,
-  StarIcon,
-  StarOff,
 } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+
 import { Doc } from "../../../../convex/_generated/dataModel";
-import { useMutation } from "convex/react";
-import { api } from "../../../../convex/_generated/api";
-import { useToast } from "@/components/ui/use-toast";
 import Image from "next/image";
+import FileCardAction from "./file-action";
+import { useQuery } from "convex/react";
+import { api } from "../../../../convex/_generated/api";
+
 type Props = {
   file: Doc<"files"> & { url: string | null , isFavourited: boolean };
-};
-const FileCardAction = ({ file }: Props) => {
-  const { toast } = useToast();
-  const [isConfirmOpen, setIsConfirmOpen] = useState<boolean>(false);
-  const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
-  const deleteFile = useMutation(api.files.deleteFile);
-  const toggleFavourite = useMutation(api.files.toggleFavourites);
-  return (
-    <>
-      <AlertDialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete your
-              file and remove your data from our servers.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={async () => {
-                await deleteFile({ fileId: file._id });
-                toast({
-                  variant: "destructive",
-                  title: "File Deleted",
-                  description: "Your file has been deleted.",
-                });
-              }}
-            >
-              Continue
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+}
 
-      <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}
-      >
-        <DropdownMenuTrigger>
-          <EllipsisVertical />
-        </DropdownMenuTrigger>
-        <DropdownMenuContent>
-          <DropdownMenuLabel
-            onClick={() => {
-              if (!file.url) return;
-              window.open(file.url, "_blank");
-            }}
-            className=" cursor-pointer flex gap-2 text-slate-600 items-center"
-          >
-            <Download />
-            Download
-          </DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuLabel
-            onClick={() => {
-              toggleFavourite({ fileId: file._id });
-              setIsDropdownOpen(false)
-            }}
-            className=" cursor-pointer flex gap-2 text-slate-600 items-center"
-          >
-            {file.isFavourited ? (
-              <>
-                <StarOff /> Unfavorite
-              </>
-            ) : (
-              <>
-                 <StarIcon/> Favorite
-              </>
-            )}
-          </DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuLabel
-            onClick={() => {
-              setIsConfirmOpen(true);
-            }}
-            className=" cursor-pointer flex gap-2 text-red-600 items-center"
-          >
-            <Delete />
-            Delete
-          </DropdownMenuLabel>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </>
-  );
-};
 const FileCard = ({ file }: Props) => {
+  const userProfile = useQuery(api.users.getUserProfile , {userId:file.userId})
   const typeIcons = {
     image: <Images />,
     csv: <FileSpreadsheet />,
@@ -177,7 +75,16 @@ const FileCard = ({ file }: Props) => {
           )}
         </CardContent>
         <CardFooter>
-          <button>download</button>
+        <div className="flex gap-2 text-xs text-gray-700 w-40 items-center">
+          <Avatar className="w-6 h-6">
+            <AvatarImage src={userProfile?.image} />
+            <AvatarFallback>CN</AvatarFallback>
+          </Avatar>
+          {userProfile?.name}
+        </div>
+        <div className="text-xs text-gray-700">
+          {/* Uploaded on {formatRelative(new Date(file._creationTime), new Date())} */}
+        </div>
         </CardFooter>
       </Card>
     </div>

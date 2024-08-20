@@ -52,6 +52,7 @@ export const createFile = mutation({
       types: args.types,
       orgId: args.orgId,
       fileId: args.fileId,
+      userId: hasAccess.user._id,
     });
   },
 });
@@ -162,17 +163,11 @@ async function hasAccessToFile(
   if (!file) {
     return null;
   }
-  const hasAccess = hasAccessToOrg(ctx, file?.orgId);
-
-  const user = await ctx.db
-    .query("users")
-    .withIndex("by_tokenIdentifier", (q) =>
-      q.eq("tokenIdentifier", identity.tokenIdentifier)
-    )
-    .first();
-  if (!user) {
-    return null;
+  const hasAccess = await hasAccessToOrg(ctx, file?.orgId);
+  if (!hasAccess) {
+    throw new ConvexError("you do not have access to this org");
   }
+  const user = hasAccess.user
   return { user, file };
 }
 
