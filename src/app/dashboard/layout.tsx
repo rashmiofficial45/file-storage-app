@@ -7,7 +7,7 @@ export default function DashboardLayout({
 }>) {
   return (
       <main className="flex flex-col min-h-screen">
-      <div className="flex gap-8">
+      <div className="flex">
         <SideNav/>
         <div className="flex-1">
           {children}

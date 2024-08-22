@@ -76,7 +76,7 @@ const FileBrowser = ({title , favourites}: Props) => {
                   </div>
                 </div>
               )}
-              <div className="grid gap-4 grid-cols-3 p-12">
+              <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 p-12">
               {modifiedFiles?.map((file) => {
               return <FileCard key={file._id} file={file} />;
             })}

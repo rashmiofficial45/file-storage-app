@@ -28,6 +28,7 @@ import { Doc } from "../../../../convex/_generated/dataModel";
 import { useMutation } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { useToast } from "@/components/ui/use-toast";
+import { Protect } from "@clerk/nextjs";
 type Props = {
   file: Doc<"files"> & { url: string | null , isFavourited: boolean };
 };
@@ -100,6 +101,10 @@ const FileCardAction = ({ file }: Props) => {
               </>
             )}
           </DropdownMenuLabel>
+          <Protect
+      role="org:admin"
+      fallback={""}
+    >
           <DropdownMenuSeparator />
           <DropdownMenuLabel
             onClick={() => {
@@ -110,6 +115,7 @@ const FileCardAction = ({ file }: Props) => {
             <Delete />
             Delete
           </DropdownMenuLabel>
+          </Protect>
         </DropdownMenuContent>
       </DropdownMenu>
     </>

@@ -1,6 +1,5 @@
 import { ConvexError, v } from "convex/values";
 import { mutation, MutationCtx, query, QueryCtx } from "./_generated/server";
-import { getUser } from "./users";
 import { fileTypes } from "./schema";
 import { Id } from "./_generated/dataModel";
 
@@ -29,7 +28,7 @@ async function hasAccessToOrg(
   if (!user) {
     return null;
   }
-   const hasAccess = user.orgIds.includes(orgId) || user.tokenIdentifier.includes(orgId);
+   const hasAccess = user.orgIds.some(orgIds => orgIds.orgId.includes(orgId)) || user.tokenIdentifier.includes(orgId);
    if(!hasAccess){
     return null;
    }
