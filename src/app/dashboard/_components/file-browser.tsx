@@ -11,9 +11,10 @@ import { SearchBar } from "../_components/search-bar";
 type Props = {
     title:string,
     favourites?:boolean
+    deletedOnly?:boolean
 }
 
-const FileBrowser = ({title , favourites}: Props) => {
+const FileBrowser = ({title , favourites , deletedOnly}: Props) => {
   const [query, setQuery] = useState("");
   const organization = useOrganization();
   const user = useUser();
@@ -24,7 +25,7 @@ const FileBrowser = ({title , favourites}: Props) => {
   }
   const allFavourites = useQuery(api.files.getAllFavorites , orgId?{orgId}:"skip" )
 
-  const files = useQuery(api.files.getFiles, orgId ? { orgId, query , favourites} : "skip");
+  const files = useQuery(api.files.getFiles, orgId ? { orgId, query, favourites, deletedOnly} : "skip");
   const isLoading = files === undefined;
   if (files === null) return <div>Something went wrong</div>
   if(!allFavourites){

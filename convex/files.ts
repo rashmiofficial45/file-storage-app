@@ -1,5 +1,5 @@
 import { ConvexError, v } from "convex/values";
-import { mutation, MutationCtx, query, QueryCtx } from "./_generated/server";
+import { internalMutation, mutation, MutationCtx, query, QueryCtx } from "./_generated/server";
 import { fileTypes } from "./schema";
 import { Id } from "./_generated/dataModel";
 
@@ -61,6 +61,7 @@ export const getFiles = query({
     orgId: v.string(),
     query: v.optional(v.string()),
     favourites: v.optional(v.boolean()),
+    deletedOnly: v.optional(v.boolean()),
   },
   async handler(ctx, args) {
     const hasAccess = await hasAccessToOrg(ctx, args.orgId);
@@ -95,6 +96,12 @@ export const getFiles = query({
         favourites.some((fav) => fav.fileId === file._id)
       );
     }
+    if (args.deletedOnly) {
+      files = files.filter((file) => file.shouldDelete);
+    }
+    else {
+      files = files.filter((file) => !file.shouldDelete);
+    }
     const filesWithUrl = await Promise.all(
       files.map(async (file) => ({
         ...file,
@@ -106,6 +113,17 @@ export const getFiles = query({
   },
 });
 
+export const deleteAllFile = internalMutation({
+  async handler(ctx) {
+    const files = await ctx.db.query("files").withIndex("by_shouldDelete", q => q.eq("shouldDelete",true)).collect()
+    await Promise.all(
+      files.map(async (file) => {
+      await ctx.storage.delete(file.fileId)
+      return await ctx.db.delete(file._id)
+    })
+  )
+  },
+});
 export const deleteFile = mutation({
   args: {
     fileId: v.id("files"),
@@ -115,9 +133,23 @@ export const deleteFile = mutation({
     if (!access) {
       throw new ConvexError("You are not authorized to access this file");
     }
-    await ctx.db.delete(args.fileId);
+    await ctx.db.patch(args.fileId, { shouldDelete: true })
   },
 });
+export const restoreFile = mutation({
+  args: {
+    fileId: v.id("files"),
+  },
+  async handler(ctx, args) {
+    const access = await hasAccessToFile(ctx, args.fileId);
+    if (!access) {
+      throw new ConvexError("You are not authorized to access this file");
+    }
+    await ctx.db.patch(args.fileId, { shouldDelete: false })
+  },
+});
+
+
 
 export const toggleFavourites = mutation({
   args: {

@@ -21,8 +21,10 @@ import {
   Delete,
   Download,
   EllipsisVertical,
+  RotateCcw,
   StarIcon,
   StarOff,
+  Trash2,
 } from "lucide-react";
 import { Doc } from "../../../../convex/_generated/dataModel";
 import { useMutation } from "convex/react";
@@ -30,13 +32,14 @@ import { api } from "../../../../convex/_generated/api";
 import { useToast } from "@/components/ui/use-toast";
 import { Protect } from "@clerk/nextjs";
 type Props = {
-  file: Doc<"files"> & { url: string | null , isFavourited: boolean };
+  file: Doc<"files"> & { url: string | null; isFavourited: boolean };
 };
 const FileCardAction = ({ file }: Props) => {
   const { toast } = useToast();
   const [isConfirmOpen, setIsConfirmOpen] = useState<boolean>(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
   const deleteFile = useMutation(api.files.deleteFile);
+  const restoreFile = useMutation(api.files.restoreFile);
   const toggleFavourite = useMutation(api.files.toggleFavourites);
   return (
     <>
@@ -45,8 +48,8 @@ const FileCardAction = ({ file }: Props) => {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete your
-              file and remove your data from our servers.
+              This action will delete your file. You can visit this file in
+              Trash.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -55,9 +58,9 @@ const FileCardAction = ({ file }: Props) => {
               onClick={async () => {
                 await deleteFile({ fileId: file._id });
                 toast({
-                  variant: "destructive",
+                  variant: "default",
                   title: "File Deleted",
-                  description: "Your file has been deleted.",
+                  description: "Your file has been moved to trash.",
                 });
               }}
             >
@@ -67,8 +70,7 @@ const FileCardAction = ({ file }: Props) => {
         </AlertDialogContent>
       </AlertDialog>
 
-      <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}
-      >
+      <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
         <DropdownMenuTrigger>
           <EllipsisVertical />
         </DropdownMenuTrigger>
@@ -87,39 +89,50 @@ const FileCardAction = ({ file }: Props) => {
           <DropdownMenuLabel
             onClick={() => {
               toggleFavourite({ fileId: file._id });
-              setIsDropdownOpen(false)
+              setIsDropdownOpen(false);
             }}
             className=" cursor-pointer flex gap-2 text-slate-600 items-center"
           >
-            {file.isFavourited ? (
-              <>
-                <StarOff /> Unfavorite
-              </>
-            ) : (
-              <>
-                 <StarIcon/> Favorite
-              </>
-            )}
+                {file.isFavourited ? (
+                  <>
+                    <StarOff /> Unfavorite
+                  </>
+                ) : (
+                  <>
+                    <StarIcon /> Favorite
+                  </>
+                )}
           </DropdownMenuLabel>
-          <Protect
-      role="org:admin"
-      fallback={""}
-    >
           <DropdownMenuSeparator />
-          <DropdownMenuLabel
-            onClick={() => {
-              setIsConfirmOpen(true);
-            }}
-            className=" cursor-pointer flex gap-2 text-red-600 items-center"
-          >
-            <Delete />
-            Delete
-          </DropdownMenuLabel>
+          <Protect role="org:admin" fallback={""}>
+            <DropdownMenuLabel
+              onClick={() => {
+                if (file.shouldDelete) {
+                  restoreFile({ fileId: file._id })
+                }
+                else{
+                  setIsConfirmOpen(true);
+                }
+              }}
+              className=" cursor-pointer flex-col  items-center"
+            >
+              {file.shouldDelete ? (
+                <div className="flex gap-2 text-lime-500 items-center">
+                  <RotateCcw />
+                  Restore
+                </div>
+              ) : (
+                <div className="flex gap-2 items-center text-red-600">
+                  <Trash2 />
+                  Delete
+                </div>
+              )}
+            </DropdownMenuLabel>
           </Protect>
         </DropdownMenuContent>
       </DropdownMenu>
     </>
   );
-}
+};
 
 export default FileCardAction;
