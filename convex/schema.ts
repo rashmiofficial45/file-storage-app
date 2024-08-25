@@ -8,6 +8,8 @@ export const fileTypes = v.union(
 );
 export const roles = v.union(v.literal("admin"), v.literal("member"))
 export default defineSchema({
+
+  
   files: defineTable({
     name: v.string(),
     types: fileTypes,
@@ -16,11 +18,15 @@ export default defineSchema({
     userId: v.id("users"),
     shouldDelete: v.optional(v.boolean()),
   }).index("by_org", ["orgId"]).index("by_shouldDelete",["shouldDelete"]),
+
+
   favourites: defineTable({
     fileId: v.id("files"),
     orgId: v.string(),
     userId: v.id("users"),
   }).index("by_userId_orgId_fileId", ["userId","orgId","fileId"]),
+
+
   users: defineTable({
     tokenIdentifier: v.string(),
     orgIds: v.array(v.object({

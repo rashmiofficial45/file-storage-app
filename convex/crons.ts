@@ -4,8 +4,8 @@ import { internal } from "./_generated/api";
 const crons = cronJobs();
 
 crons.interval(
-  "clear messages table",
-  { minutes: 1 }, // every minute
+  "Permanently Delete the Trash",
+  { hours: 730 }, // 1 month
   internal.files.deleteAllFile,
 );
 
