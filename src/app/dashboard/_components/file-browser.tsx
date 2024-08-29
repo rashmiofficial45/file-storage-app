@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/select";
 import { DataTable } from "./data-table";
 import { columns } from "./columns";
+import { Doc } from "../../../../convex/_generated/dataModel";
 
 type Props = {
   title: string;
@@ -28,6 +29,7 @@ type Props = {
 
 const FileBrowser = ({ title, favourites, deletedOnly }: Props) => {
   const [query, setQuery] = useState("");
+  const [type, setType] = useState<Doc<"files">["types"] | "All">("All");
   const organization = useOrganization();
   const user = useUser();
   let orgId: string | undefined = undefined;
@@ -42,7 +44,7 @@ const FileBrowser = ({ title, favourites, deletedOnly }: Props) => {
 
   const files = useQuery(
     api.files.getFiles,
-    orgId ? { orgId, query, favourites, deletedOnly } : "skip"
+    orgId ? { orgId, type:type === "All"? undefined : type , query, favourites, deletedOnly } : "skip"
   );
   const isLoading = files === undefined;
   if (files === null) return <div>Something went wrong</div>;
@@ -94,16 +96,16 @@ const FileBrowser = ({ title, favourites, deletedOnly }: Props) => {
               <div className="hidden sm:flex gap-0 sm:gap-2  items-center pr-12">
                 <Label htmlFor="type-select">Type Filter</Label>
                 <Select
-                // value={type}
-                // onValueChange={(newType) => {
-                //   setType(newType as any);
-                // }}
+                value={type}
+                onValueChange={(newType) => {
+                  setType(newType as any);
+                }}
                 >
-                  <SelectTrigger id="type-select" className="w-[180px]">
-                    <SelectValue />
+                  <SelectTrigger id="type-select" defaultValue={"All"} className="w-[180px]">
+                    <SelectValue placeholder="All"/>
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All</SelectItem>
+                    <SelectItem value="All">All</SelectItem>
                     <SelectItem value="image">Image</SelectItem>
                     <SelectItem value="csv">CSV</SelectItem>
                     <SelectItem value="pdf">PDF</SelectItem>
@@ -135,16 +137,15 @@ const FileBrowser = ({ title, favourites, deletedOnly }: Props) => {
               </div>
             )}
             <TabsContent value="grid">
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 pr-12 pt-2 auto-rows-max">
-              {modifiedFiles?.map((file) => {
-                return <FileCard key={file._id} file={file} />;
-              })}
-            </div>
-        </TabsContent>
-        <TabsContent value="table">
-          <DataTable columns={columns} data={modifiedFiles} />
-        </TabsContent>
-
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 pr-12 pt-2 auto-rows-max">
+                {modifiedFiles?.map((file) => {
+                  return <FileCard key={file._id} file={file} />;
+                })}
+              </div>
+            </TabsContent>
+            <TabsContent value="table">
+              <DataTable columns={columns} data={modifiedFiles} />
+            </TabsContent>
           </Tabs>
         </>
       )}

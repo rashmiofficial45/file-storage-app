@@ -21,14 +21,8 @@ function UserCell({ userId }: { userId: Id<"users"> }) {
 </div>
 }
 
-
 export const columns: ColumnDef<Doc<"files"> & { url: string | null; isFavourited: boolean }>[] = [
-  {
-    header: "User",
-    cell: ({ row }) => {
-      return <UserCell userId={row.original.userId} />
-    },
-  },
+
   {
     accessorKey: "name",
     header: "Name",
@@ -36,6 +30,12 @@ export const columns: ColumnDef<Doc<"files"> & { url: string | null; isFavourite
   {
     accessorKey: "types",
     header: "Type",
+  },
+  {
+    header: "User",
+    cell: ({ row }) => {
+      return <UserCell userId={row.original.userId} />
+    },
   },
   {
     header: "Uploaded at",

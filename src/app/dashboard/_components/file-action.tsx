@@ -27,7 +27,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { Doc } from "../../../../convex/_generated/dataModel";
-import { useMutation } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { useToast } from "@/components/ui/use-toast";
 import { Protect } from "@clerk/nextjs";
@@ -41,6 +41,7 @@ const FileCardAction = ({ file }: Props) => {
   const deleteFile = useMutation(api.files.deleteFile);
   const restoreFile = useMutation(api.files.restoreFile);
   const toggleFavourite = useMutation(api.files.toggleFavourites);
+  const me = useQuery(api.users.getMe)
   return (
     <>
       <AlertDialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
@@ -104,7 +105,16 @@ const FileCardAction = ({ file }: Props) => {
                 )}
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <Protect role="org:admin" fallback={""}>
+          <Protect condition={
+            (check)=>{
+              return check({
+                role:"org:admin"
+              })||file.userId === me?._id
+              ;
+            }
+          } fallback={
+            <></>
+          }>
             <DropdownMenuLabel
               onClick={() => {
                 if (file.shouldDelete) {

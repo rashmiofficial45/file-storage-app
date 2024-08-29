@@ -30,7 +30,7 @@ const FileCard = ({ file }: Props) => {
   } as Record<Doc<"files">["types"], ReactNode>;
   return (
     <div>
-      <Card className="border rounded-lg shadow-md overflow-hidden transition-transform duration-200 hover:shadow-lg hover:scale-105 bg-white">
+      <Card className="border rounded-lg shadow-md overflow-hidden transition-transform duration-200 hover:shadow-lg bg-white">
         <CardHeader className="p-4 bg-gradient-to-r from-gray-100 to-gray-50 border-b">
           <div className="flex flex-col sm:flex-row sm:gap-8 justify-between relative">
             <div className="flex items-center gap-3 w-full sm:w-auto">

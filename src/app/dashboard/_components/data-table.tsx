@@ -6,7 +6,6 @@ import {
   getCoreRowModel,
   useReactTable,
   getPaginationRowModel,
-
 } from "@tanstack/react-table"
 
 import {
@@ -34,7 +33,7 @@ export function DataTable<TData, TValue>({
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
 
-  })
+})
 
   return (
     <>
