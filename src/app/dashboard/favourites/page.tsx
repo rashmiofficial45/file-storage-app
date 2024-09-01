@@ -1,5 +1,5 @@
 import FileBrowser from "../_components/file-browser";
-
+export const runtime = 'edge';
 const Favourites = () => {
   return (
     <>
