@@ -1,9 +1,10 @@
 import { OrganizationSwitcher, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
+import { currentUser } from "@clerk/nextjs/server";
 import React from "react";
-
 type Props = {};
 
-const Header = (props: Props) => {
+const Header = async (props: Props) => {
+  const user = await currentUser()
   return (
     <div className="border-b">
       <div className="flex justify-between items-center px-8">
@@ -19,11 +20,14 @@ const Header = (props: Props) => {
             }}
           />
           <UserButton />
+          {user ? <>
+          </>:<>
           <SignedOut>
         <SignInButton>
           Sign In
         </SignInButton>
       </SignedOut>
+          </>}
         </div>
       </div>
     </div>
