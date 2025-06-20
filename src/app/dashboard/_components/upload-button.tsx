@@ -154,6 +154,7 @@ export const UploadButton = () => {
                           type="file"
                           placeholder="Enter your File Name"
                           {...fileRef}
+                          accept=".png,.jpg,.jpeg,.pdf,.csv"
                         />
                       </FormControl>
                       <FormMessage />
