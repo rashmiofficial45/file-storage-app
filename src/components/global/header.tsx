@@ -1,5 +1,6 @@
 import { OrganizationSwitcher, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
 import { currentUser } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
 import React from "react";
 type Props = {};
 
@@ -12,15 +13,15 @@ const Header = async (props: Props) => {
             File-store
         </div>
         <div className="flex justify-end py-3 items-center gap-4">
-          <OrganizationSwitcher
-            appearance={{
-              variables: {
-                fontSize: "1rem",
-              },
-            }}
-          />
-          <UserButton />
           {user ? <>
+            <OrganizationSwitcher
+              appearance={{
+                variables: {
+                  fontSize: "1rem",
+                },
+              }}
+            />
+          <UserButton />
           </>:<>
           <SignedOut>
         <SignInButton>
