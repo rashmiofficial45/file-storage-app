@@ -1,6 +1,5 @@
 import { OrganizationSwitcher, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
 import { currentUser } from "@clerk/nextjs/server";
-import { redirect } from "next/navigation";
 import React from "react";
 type Props = {};
 
