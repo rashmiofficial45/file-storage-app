@@ -1,3 +1,4 @@
+// users.ts
 import { ConvexError, v } from "convex/values";
 import {
   internalMutation,
@@ -7,6 +8,10 @@ import {
 } from "./_generated/server";
 import { roles } from "./schema";
 
+/*
+  Helper: fetch a user by their tokenIdentifier.
+  Throws if user not found.
+*/
 export const getUser = async (
   ctx: QueryCtx | MutationCtx,
   tokenIdentifier: string
@@ -21,6 +26,10 @@ export const getUser = async (
   return user;
 };
 
+/*
+  INTERNAL: create a new user record.
+  Only server code (e.g. webhooks) can call this.
+*/
 export const createUser = internalMutation({
   args: {
     tokenIdentifier: v.string(),
@@ -29,13 +38,17 @@ export const createUser = internalMutation({
   },
   async handler(ctx, args) {
     await ctx.db.insert("users", {
-      tokenIdentifier: args.tokenIdentifier,
-      orgIds: [],
+      tokenIdentifier: args.tokenIdentifier /* Unique Clerk identifier */,
+      orgIds: [] /* Empty array to start */,
       name: args.name,
       image: args.image,
     });
   },
 });
+
+/*
+  INTERNAL: update an existing user’s basic profile info.
+*/
 export const updateUser = internalMutation({
   args: {
     tokenIdentifier: v.string(),
@@ -51,6 +64,9 @@ export const updateUser = internalMutation({
   },
 });
 
+/*
+  INTERNAL: add a new organization to a user’s orgIds array.
+*/
 export const addOrgIdToUser = internalMutation({
   args: {
     tokenIdentifier: v.string(),
@@ -59,12 +75,16 @@ export const addOrgIdToUser = internalMutation({
   },
   async handler(ctx, args) {
     const user = await getUser(ctx, args.tokenIdentifier);
-
     await ctx.db.patch(user._id, {
-      orgIds: [...user?.orgIds, { orgId: args.orgId, role: args.role }],
+      orgIds: [...user.orgIds, { orgId: args.orgId, role: args.role }],
     });
   },
 });
+
+/*
+  INTERNAL: update a user’s role within an org.
+  Finds the matching org entry and mutates its role.
+*/
 export const updateRoleInOrgForUser = internalMutation({
   args: {
     tokenIdentifier: v.string(),
@@ -73,20 +93,20 @@ export const updateRoleInOrgForUser = internalMutation({
   },
   async handler(ctx, args) {
     const user = await getUser(ctx, args.tokenIdentifier);
-    const org = user.orgIds.find((org) => org.orgId === args.orgId);
-    if (!org) throw new ConvexError("User not found in the organization");
-    org.role = args.role;
-    await ctx.db.patch(user._id, {
-      orgIds: user.orgIds,
-    });
+    const orgEntry = user.orgIds.find((o) => o.orgId === args.orgId);
+    if (!orgEntry) throw new ConvexError("User not found in the organization");
+    orgEntry.role = args.role;
+    await ctx.db.patch(user._id, { orgIds: user.orgIds });
   },
 });
 
+/*
+  PUBLIC QUERY: fetch another user’s public profile by userId.
+*/
 export const getUserProfile = query({
   args: { userId: v.id("users") },
   async handler(ctx, args) {
     const user = await ctx.db.get(args.userId);
-
     return {
       name: user?.name,
       image: user?.image,
@@ -94,21 +114,17 @@ export const getUserProfile = query({
   },
 });
 
+/*
+  PUBLIC QUERY: fetch the “current user” based on auth context.
+  Returns full user record or null.
+*/
 export const getMe = query({
   args: {},
   async handler(ctx) {
     const identity = await ctx.auth.getUserIdentity();
-
-    if (!identity) {
-      return null;
-    }
+    if (!identity) return null;
 
     const user = await getUser(ctx, identity.tokenIdentifier);
-
-    if (!user) {
-      return null;
-    }
-
-    return user;
+    return user || null;
   },
 });
