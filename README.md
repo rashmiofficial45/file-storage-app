@@ -19,12 +19,6 @@ A real-time, multi-tenant file storage platform built with **Next.js**, **Convex
 
 ---
 
-## 🚀 Live Demo
-
-> (Add your deployment link here)
-
----
-
 ## 📦 Features
 
 - ✅ Multi-tenant organization support
@@ -77,7 +71,7 @@ CLERK_HOSTNAME=your-app.clerk.accounts.dev
 If not linked:
 ```bash
 npx convex init
-Follow the CLI to log in and link to your Convex project.
+## Follow the CLI to log in and link to your Convex project.
 ```
 
 ### 5️⃣ Push Convex Schema
@@ -87,11 +81,12 @@ npx convex push
 ```
 
 ### 6️⃣ Start the Dev Server
-```bash
 For pnpm:
+```bash
 pnpm dev
-
+```
 For npm:
+```bash
 npm run dev
 ```
 
@@ -102,14 +97,12 @@ Set the destination URL to:
 ```bash
 
 https://<your-app-url>/api/clerk
+```
 Add events:
-
+```bash
 user.created
-
 user.updated
-
 organizationMembership.created
-
 organizationMembership.updated
 ```
 
