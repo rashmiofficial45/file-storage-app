@@ -18,7 +18,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import {
-  Delete,
   Download,
   EllipsisVertical,
   RotateCcw,
@@ -94,23 +93,22 @@ const FileCardAction = ({ file }: Props) => {
             }}
             className=" cursor-pointer flex gap-2 text-slate-600 items-center"
           >
-                {file.isFavourited ? (
-                  <>
-                    <StarOff /> Unfavorite
-                  </>
-                ) : (
-                  <>
-                    <StarIcon /> Favorite
-                  </>
-                )}
+            {file.isFavourited ? (
+              <>
+                <StarOff /> Unfavorite
+              </>
+            ) : (
+              <>
+                <StarIcon /> Favorite
+              </>
+            )}
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <Protect condition={
-            (check)=>{
+            (check) => {
               return check({
-                role:"org:admin"
-              })||file.userId === me?._id
-              ;
+                role: "org:admin"
+              }) || file.userId === me?._id
             }
           } fallback={
             <></>
@@ -120,11 +118,11 @@ const FileCardAction = ({ file }: Props) => {
                 if (file.shouldDelete) {
                   restoreFile({ fileId: file._id })
                 }
-                else{
+                else {
                   setIsConfirmOpen(true);
                 }
               }}
-              className=" cursor-pointer flex-col  items-center"
+              className="cursor-pointer flex-col items-center"
             >
               {file.shouldDelete ? (
                 <div className="flex gap-2 text-lime-500 items-center">
