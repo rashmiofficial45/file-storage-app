@@ -38,9 +38,6 @@ const Header = async (props: Props) => {
               </div>
             </div>
           </div>
-
-
-
           {/* Right Side Actions */}
           <div className="flex items-center space-x-4">
             {user ? (
@@ -70,9 +67,9 @@ const Header = async (props: Props) => {
               <div className="flex items-center space-x-3">
                 <SignedOut>
                   <SignInButton>
-                  <Button variant="ghost" size="sm" className="hidden sm:inline-flex text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white backdrop-blur-sm">
-                    Sign in
-                  </Button>
+                    <Button variant="ghost" size="sm" className="hidden sm:inline-flex text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white backdrop-blur-sm">
+                      Sign in
+                    </Button>
                   </SignInButton>
                   <SignUpButton>
                     <Button size="sm" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-xl hover:shadow-2xl transition-all duration-300 font-medium backdrop-blur-sm">
